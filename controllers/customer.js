@@ -7,7 +7,7 @@ const getCustomers = asyncHandler(async (req, res) => {
   res.status(200).json(users);
 });
 const getCustomer = asyncHandler(async (req, res) => {
-  const { id } = req.body;
+  const { id } = req.params.id;
   const user = await User.findById(id);
   res.status(200).json(user);
 });

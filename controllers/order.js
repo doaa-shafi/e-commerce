@@ -7,7 +7,7 @@ const getOrders = asyncHandler(async (req, res) => {
   res.status(200).json(orders);
 });
 const getOrder = asyncHandler(async (req, res) => {
-  const { id } = req.body;
+  const { id } = req.params.id;
   const order = await Order.findById(id);
   res.status(200).json(order);
 });

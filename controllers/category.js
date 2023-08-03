@@ -6,7 +6,7 @@ const getCategories = asyncHandler(async (req, res) => {
   res.status(200).json(categories);
 });
 const getCategory = asyncHandler(async (req, res) => {
-  const { id } = req.body;
+  const { id } = req.params.id;
   const category = await Category.findById(id);
   res.status(200).json(category);
 });

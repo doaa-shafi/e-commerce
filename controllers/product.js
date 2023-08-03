@@ -6,7 +6,7 @@ const getProducts = asyncHandler(async (req, res) => {
   res.status(200).json(products);
 });
 const getProduct = asyncHandler(async (req, res) => {
-  const { id } = req.body;
+  const { id } = req.params.id;
   const product = await Product.findById(id);
   res.status(200).json(product);
 });
