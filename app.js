@@ -1,4 +1,5 @@
 require('dotenv').config()
+const {PORT,MONGO_URI}=require('./config/configVariables')
 const mongoose = require('mongoose')
 const express = require('express')
 var cookieParser = require('cookie-parser');
@@ -9,7 +10,9 @@ const authRoutes = require ('./routes/auth')
 const categoryRoutes = require ('./routes/category')
 const customerRoutes = require ('./routes/customer')
 const productRoutes = require ('./routes/product')
-const orderRoutes = require ('./routes/order')
+const orderRoutes = require ('./routes/order');
+const errorHandler = require('./middlewares/errorHandler');
+const ApiError=require('./helpers/ApiError')
 
 //express app
 const app = express()
@@ -26,11 +29,18 @@ app.use('/customers',customerRoutes)
 app.use('/products',productRoutes)
 app.use('/orders',orderRoutes)
 
-mongoose.connect(process.env.MONGO_URI)
+app.all('*',(req,res,next)=>{
+    next(new ApiError(`${req.originalUrl} Not Found`,400))
+})
+
+//middleware
+app.use(errorHandler)
+
+mongoose.connect(MONGO_URI)
     .then(()=>{
         //listen for requests
-        app.listen(process.env.PORT,()=>{
-        console.log('connected to db & listening on port ',process.env.PORT)
+        app.listen(PORT,()=>{
+        console.log('connected to db & listening on port ',PORT)
         })
 
     })
