@@ -1,34 +1,20 @@
 const User = require("../models/user");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { loginSchema, signupSchema } = require("../config/validationSchema");
-const { loginService, signupService, refreshSrevice } = require("../services/auth");
+const { loginSchema, signupSchema } = require("../validatationSchemas/userSchema");
+const authService = require("../services/auth");
 const {REFRESH_TOKEN_SECRET}=require('../config/configVariables')
-const ApiError=require('../helpers/ApiError')
+const {AuthenticationError,AuthorizationError}=require('../helpers/errors')
+const validate=require('../helpers/validate')
 
 // @desc Login
 // @route POST /auth
 // @access Public
 const login = async (req, res, next) => {
   const { username, password } = req.body;
-
-  const result = loginSchema.validate({
-    username: username,
-    password: password,
-  });
-  if (result.error) {
-    next(new ApiError(result.error.details[0].message, 400));
-  }
   try {
-    const foundUser = await User.findOne({ username }).exec();
+    validate(loginSchema,{ username: username,password: password})
 
-    if (!foundUser) next(new ApiError("Unauthorized", 401));
-
-    const match = await bcrypt.compare(password, foundUser.password);
-
-    if (!match) next(new ApiError("Unauthorized", 401));
-
-    const { accessToken, refreshToken } = await loginService(foundUser);
+    const { accessToken, refreshToken } = await authService.login(username,password);
 
     // Create secure cookie with refresh token
     res.cookie("jwt", refreshToken, {
@@ -39,29 +25,17 @@ const login = async (req, res, next) => {
     });
     res.status(200).json({ accessToken });
   } catch (error) {
-    next(new ApiError(error.message, 500));
-  }
+    next(error)
+  }  
+  
 };
 
 const signUp = async (req, res, next) => {
   const { username, email, password, confirm_password } = req.body;
-
-  const result = signupSchema.validate({
-    username: username,
-    email: email,
-    password: password,
-    confirm_password: confirm_password,
-  });
-  if (result.error) {
-    next(new ApiError(result.error.details[0].message, 400));
-  }
   try {
-    const { accessToken, refreshToken } = await signupService(
-      username,
-      email,
-      password
-    );
-    
+    validate(signupSchema,{  username: username,email: email,password: password,confirm_password: confirm_password})
+
+    const { accessToken, refreshToken } = await authService.signup(username,email,password);
 
     // Create secure cookie with refresh token
     res.cookie("jwt", refreshToken, {
@@ -72,8 +46,8 @@ const signUp = async (req, res, next) => {
     });
     res.status(200).json({ accessToken });
   } catch (error) {
-    next(new ApiError(error.message, 500));
-  }
+    next(error)
+  }  
 };
 
 // @desc Refresh
@@ -81,29 +55,29 @@ const signUp = async (req, res, next) => {
 // @access Public - because access token has expired
 const refresh = (req, res, next) => {
   const cookies = req.cookies;
-
-  if (!cookies?.jwt) next(new ApiError("Unauthorized", 401));
-
-  const refreshToken = cookies.jwt;
   try {
+    if (!cookies?.jwt) next(new AuthenticationError("Unauthorized"));
+
+    const refreshToken = cookies.jwt;
+
     jwt.verify(
       refreshToken,
       REFRESH_TOKEN_SECRET,
       async (err, decoded) => {
-        if (err) return res.status(403).json({ message: "Forbidden" });
+        if (err) next(new AuthorizationError('Forbidden'))
   
         const foundUser = await User.findOne({
           username: decoded.username,
         }).exec();
   
-        if (!foundUser) return res.status(401).json({ message: "Unauthorized" });
+        if (!foundUser) next(new AuthenticationError("Unauthorized"));
         
-        const accessToken=refreshSrevice(foundUser)
+        const accessToken=authService.refresh(foundUser)
         res.json({ accessToken });
       });
   } catch (error) {
-    next(new ApiError(error.message, 500));
-  }
+    next(error)
+  }  
      
 };
 

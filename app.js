@@ -12,7 +12,7 @@ const customerRoutes = require ('./routes/customer')
 const productRoutes = require ('./routes/product')
 const orderRoutes = require ('./routes/order');
 const errorHandler = require('./middlewares/errorHandler');
-const ApiError=require('./helpers/ApiError')
+const {ApiError}=require('./helpers/errors')
 
 //express app
 const app = express()

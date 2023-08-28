@@ -4,39 +4,52 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../helpers/JWThelpers");
+const {AuthenticationError}=require('../helpers/errors')
 
-const loginService = async (foundUser) => {
-  const accessToken = generateAccessToken(
-    foundUser.username,
-    foundUser._id,
-    foundUser.role
-  );
+class authService{
 
-  const refreshToken = generateRefreshToken(foundUser.username);
+  async login(username,password){
+    const foundUser = await User.findOne({ username }).exec();
 
-  return { accessToken, refreshToken };
-};
-const signupService = async (username, email, password) => {
-  const salt = await bcrypt.genSalt();
-  const hashedPassword = await bcrypt.hash(password, salt);
-  const user = await User.create({
-    username: username,
-    email: email,
-    password: hashedPassword,
-    role: "customer",
-  });
+    if (!foundUser) throw new AuthenticationError("Unauthorized");
 
-  const accessToken = generateAccessToken(username, user._id, "customer");
+    const match = await bcrypt.compare(password, foundUser.password);
 
-  const refreshToken = generateRefreshToken(username);
+    if (!match)  throw new AuthenticationError("Unauthorized");
 
-  return { accessToken, refreshToken };
-};
-const refreshSrevice=(foundUser)=>{
+    const accessToken = generateAccessToken(
+      foundUser.username,
+      foundUser._id,
+      foundUser.role
+    );
+
+    const refreshToken = generateRefreshToken(foundUser.username);
+
+    return { accessToken, refreshToken };
+  }
+
+  async signup(username, email, password){
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const user = await User.create({
+      username: username,
+      email: email,
+      password: hashedPassword,
+      role: "customer",
+    });
+
+    const accessToken = generateAccessToken(username, user._id, "customer");
+
+    const refreshToken = generateRefreshToken(username);
+
+    return { accessToken, refreshToken };
+  }
+
+  async refresh(foundUser){
     return accessToken = generateAccessToken(foundUser.username,foundUser._id,foundUser.role);
+  }
 }
-module.exports = {
-  signupService,
-  loginService,
-  refreshSrevice
-};
+
+module.exports = new authService()
+
+

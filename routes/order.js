@@ -1,9 +1,11 @@
 const express = require("express");
-const { getOrder, getOrders, createOrder } = require("../controllers/order");
+const { getOrder, getOrders,addToBag, createOrder } = require("../controllers/order");
 
 const verifyJWT  = require("../middlewares/verifyJWT");
 
 const router = express.Router();
+
+router.post("/add/:product_id", verifyJWT, addToBag);
 
 router.post("/", verifyJWT, createOrder);
 

@@ -1,20 +1,20 @@
 const Category = require("../models/category");
 
-const getCategoriesService = async () => {
-  return await Category.find({});
-};
-const getCategoryService = async (id) => {
-  return await Category.findById(id);
-};
+class categoryService{
 
-const addCategoryService = async (name) => {
-  return await Category.create({
-    name: name,
-  });
-};
+  async getCategories(){
+    return await Category.find({});
+  }
 
-module.exports = {
-    getCategoriesService,
-    getCategoryService,
-    addCategoryService,
-};
+  async getCategory(id){
+    return await Category.findById(id);
+  }
+
+  async addCategory(name){
+    return await Category.create({
+      name: name,
+    });
+  }
+}
+
+module.exports = new categoryService()

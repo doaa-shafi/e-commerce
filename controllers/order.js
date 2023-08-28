@@ -1,85 +1,54 @@
-const {getOrderService,getOrdersService,createOrderService,addToBagService}=require('../services/order')
-const {orderAddressSchema,isValidObjectId}=require("../config/validationSchema")
-const {ac}=require('../config/accessControl');
-const ApiError = require("../helpers/ApiError");
+const orderService=require('../services/order')
+const {orderAddressSchema}=require("../validatationSchemas/addressSchema")
+const {idSchema}=require('../validatationSchemas/idSchema')
+const validate=require('../helpers/validate');
+const authorize = require("../helpers/authorize");
+const {RESOURSES_NAMES,ACTIONS_NAMES}=require('../config/constants')
 
 const getOrders = async (req, res,next) => {
-  const permission = ac.can(req.role).readAny('order');
-  if (permission.granted) {
-    try {
-      const orders=await getOrdersService()
-      res.status(200).json(orders);
-    } catch (error) {
-      next(new ApiError(error.message,500))
-    }
-  } else {
-    // resource is forbidden for this user/role
-    next(new ApiError('You do not have access',403))
-  }
+  try {
+    authorize(req.role,RESOURSES_NAMES.ORDER,[ACTIONS_NAMES.READ_ANY])
+    const orders=await orderService.getOrders()
+    res.status(200).json(orders);
+  } catch (error) {
+    next(error)
+  }  
 };
+
 const getOrder = async (req, res,next) => {
   const  id = req.params.id;
-  const permission = ac.can(req.role).readAny('order');
-  if (permission.granted) {
-    if(id && isValidObjectId(id)){
-      try {
-        const order=await getOrderService(id)
-        res.status(200).json(order);
-      } catch (error) {
-        next(new ApiError(error.message,500))
-      }
-      
-    }else{
-      next(new ApiError("Invalid ID",400))
-    }
-    
-  } else {
-    // resource is forbidden for this user/role
-    next(new ApiError('You do not have access',403))
-  }
+  try {
+    authorize(req.role,RESOURSES_NAMES.ORDER,[ACTIONS_NAMES.READ_ANY])
+    validate(idSchema,{id:id})
+    const order=await orderService.getOrder(id)
+    res.status(200).json(order);
+  } catch (error) {
+    next(error)
+  }  
 };
 const addToBag=async(req,res,next)=>{
-  const {product_id}=req.body
+  const product_id=req.params.product_id
   const customer=req.id
-  const permission = ac.can(req.role).updateOwn('customer');
-  if (permission.granted) {
-    if(product_id && isValidObjectId(product_id)){
-      try {
-        const user=await addToBagService(customer,product_id)
-        res.status(201).json(user);
-      } catch (error) {
-        next(new ApiError(error.message,500))
-      }
-      
-    }else{
-      next(new ApiError("Invalid ID",400))
-    }
-    
-  } else {
-    // resource is forbidden for this user/role
-    next(new ApiError('You do not have access',403))
-  }
-  
+  try {
+    authorize(req.role,RESOURSES_NAMES.CUSTOMER,[ACTIONS_NAMES.UPDATE_OWN])
+    validate(idSchema,{id:product_id})
+    const user=await orderService.addToBag(customer,product_id)
+    res.status(201).json(user);
+  } catch (error) {
+    next(error)
+  }  
 }
 const createOrder = async (req, res,next) => {
   const { address } = req.body;
   const id = req.id;
-  const permission = ac.can(req.role).createAny('order');
-  if (permission.granted) {
-    const result=orderAddressSchema.validate({desc:address});
-    if(result.error){
-      next(new ApiError(result.error.details[0].message,400))
-    }
-    try {
-      const order=await createOrderService(address,id)
-      res.status(201).json(order);
-    } catch (error) {
-      next(new ApiError(error.message,500))
-    }  
-    } else {
-    // resource is forbidden for this user/role
-    next(new ApiError('You do not have access',403))
-  }
+  try {
+    authorize(req.role,RESOURSES_NAMES.ORDER,[ACTIONS_NAMES.CREATE_ANY])
+    validate(orderAddressSchema,{desc:address})
+    const order=await orderService.createOrder(address,id)
+    res.status(201).json(order);
+  } catch (error) {
+    next(error)
+  }  
 };
 
 module.exports = {

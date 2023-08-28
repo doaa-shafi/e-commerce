@@ -1,63 +1,41 @@
-const { isValidObjectId,productSchema } = require("../config/validationSchema");
-const {getProductService,getProductsService,addProductService} = require("../services/product");
-const {ac}=require('../config/accessControl')
-const ApiError = require("../helpers/ApiError");
+const productService = require("../services/product");
+const { productSchema } = require("../validatationSchemas/productSchema");
+const {idSchema}=require('../validatationSchemas/idSchema')
+const validate=require('../helpers/validate');
+const authorize = require("../helpers/authorize");
+const {RESOURSES_NAMES,ACTIONS_NAMES}=require('../config/constants')
 
-const getProducts = async (req, res) => {
-  const permission = ac.can(req.role).readAny('product');
-  if (permission.granted) {
-    try {
-      const products=await getProductsService()
-      res.status(200).json(products);
-    } catch (error) {
-      next(new ApiError(error.message,500))
-    }
-  } else {
-    // resource is forbidden for this user/role
-    next(new ApiError('You do not have access',403))
-  }
+const getProducts = async (req, res,next) => {
+  try {
+    authorize(req.role,RESOURSES_NAMES.PRODUCT,[ACTIONS_NAMES.READ_ANY])
+    const products=await productService.getProducts()
+    res.status(200).json(products);
+  } catch (error) {
+    next(error)
+  }  
 };
-const getProduct = async (req, res) => {
+const getProduct = async (req, res,next) => {
   const  id  = req.params.id;
-  const permission = ac.can(req.role).readAny('product');
-  if (permission.granted) {
-    if(id && isValidObjectId(id)){
-      try {
-        const product=await getProductService(id)
-        res.status(200).json(product);
-      } catch (error) {
-        next(new ApiError(error.message,500))
-      }
-      
-    }else{
-      next(new ApiError("Invalid ID",400))
-    }
-    
-  } else {
-    // resource is forbidden for this user/role
-    next(new ApiError('You do not have access',403))
-  }
+  try {
+    authorize(req.role,RESOURSES_NAMES.PRODUCT,[ACTIONS_NAMES.READ_ANY])
+    validate(idSchema,{id:id})
+    const product=await productService.getProduct(id)
+    res.status(200).json(product);
+  } catch (error) {
+    next(error)
+  }  
 };
 
-const addProduct = async (req, res) => {
+const addProduct = async (req, res,next) => {
   const { name, price } = req.body;
-  const permission = ac.can(req.role).createAny('product');
-  if (permission.granted) {
-    const result=productSchema.validate({ name: name,price:price});
-    if(result.error){
-      next(new ApiError(result.error.details[0].message,400))
-    }
-    try {
-      const product=await addProductService(name,price)
-      res.status(201).json(product);
-    } catch (error) {
-      next(new ApiError(error.message,500))
-    }
-    
-  } else {
-    // resource is forbidden for this user/role
-    next(new ApiError('You do not have access',403))
-  }
+  try {
+    authorize(req.role,RESOURSES_NAMES.PRODUCT,[ACTIONS_NAMES.CREATE_ANY])
+    validate(productSchema,{ name: name,price:price})
+    const product=await productService.addProduct(name,price)
+    res.status(201).json(product);
+  } catch (error) {
+    next(error)
+  }  
 };
 
 module.exports = {

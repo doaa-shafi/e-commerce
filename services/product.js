@@ -1,21 +1,21 @@
 const Product = require("../models/product");
 
-const getProductsService = async () => {
-  return await Product.find({});
-};
-const getProductService = async (id) => {
-  return await Product.findById(id);
-};
+class productService{
 
-const addProductService = async (name,price) => {
-  return await Product.create({
-    name: name,
-    price: price,
-  });
-};
+  async getProducts(){
+    return await Product.find({});
+  }
 
-module.exports = {
-  getProductsService,
-  getProductService,
-  addProductService,
-};
+  async getProduct(id){
+    return await Product.findById(id);
+  }
+
+  async addProduct(name,price){
+    return await Product.create({
+      name: name,
+      price:price
+    });
+  }
+}
+
+module.exports = new productService()
