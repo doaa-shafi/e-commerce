@@ -4,33 +4,35 @@ const Product=require("../models/product")
 
 class orderService{
 
-  async getOrders(){
-    return await Order.find({});
+  async getOrders(page,limit){
+    return await Order.find({}).skip(page*(limit-1)).limit(limit);
   }
 
   async getOrder(id){
     return await Order.findById(id);
   }
 
-  async addToBagService(customer,product_id){
-    const product=await Product.findById(product_id)
-    const user= await User.findById(customer)
-    user.bag.products.push(product_id)
-    user.bag.totalPrice=user.bag.totalPrice+product.price
-    return await User.findByIdAndUpdate(customer, {bag:user.bag},{new: true})
-    // return await User.findByIdAndUpdate(customer, {bag:{
-    //   $push: { products: { product_id } },$inc :{totalPrice: product.price}}})
+  async getCustomerOrders(id){
+    return await Order.find({user:id});
+  }
+
+  async addToBag(customer,product_id){
+    return await User.findByIdAndUpdate(customer, {$push: { bag:  product_id  }},{new: true})
   }
 
   async createOrder(address,id){
     const user = await User.findById(id);
+    const products=await Product.find({ _id: { $in:user.bag} }, { _id: 0 })
+    const totalPrice = products.reduce((accumulator, object) => {
+      return accumulator + object.price;
+    }, 0);
     const order= await Order.create({
-      products: user.bag.products,
+      products: products,
       user: user._id,
-      totalPrice: user.bag.totalPrice,
+      totalPrice: totalPrice,
       address: address,
     });
-    await User.findByIdAndUpdate(id,{bag:{products:[],totalPrice:0}})
+    await User.findByIdAndUpdate(id,{bag:[]})
     return order
   }
 }

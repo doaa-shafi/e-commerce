@@ -1,14 +1,16 @@
 const orderService=require('../services/order')
 const {orderAddressSchema}=require("../validatationSchemas/addressSchema")
-const {idSchema}=require('../validatationSchemas/idSchema')
+const {idSchema,page_limitSchema}=require('../validatationSchemas/id,page,limitSchema')
 const validate=require('../helpers/validate');
 const authorize = require("../helpers/authorize");
 const {RESOURSES_NAMES,ACTIONS_NAMES}=require('../config/constants')
 
 const getOrders = async (req, res,next) => {
+  const {page,limit}=req.body
   try {
     authorize(req.role,RESOURSES_NAMES.ORDER,[ACTIONS_NAMES.READ_ANY])
-    const orders=await orderService.getOrders()
+    validate(page_limitSchema,{page:page,limit:limit})
+    const orders=await orderService.getOrders(page,limit)
     res.status(200).json(orders);
   } catch (error) {
     next(error)
@@ -38,6 +40,17 @@ const addToBag=async(req,res,next)=>{
     next(error)
   }  
 }
+const getCustomerOrders = async (req, res,next) => {
+  const id  = req.params.id;
+  try {
+    authorize(req.role,RESOURSES_NAMES.ORDER,[ACTIONS_NAMES.READ_ANY,ACTIONS_NAMES.READ_OWN],id===req.id)
+    validate(idSchema,{id:id})
+    const orders = await orderService.getCustomerOrders(id);
+    res.status(200).json(orders);
+  } catch (error) {
+    next(error)
+  } 
+};
 const createOrder = async (req, res,next) => {
   const { address } = req.body;
   const id = req.id;
@@ -55,5 +68,6 @@ module.exports = {
   createOrder,
   getOrders,
   getOrder,
+  getCustomerOrders,
   addToBag,
 };

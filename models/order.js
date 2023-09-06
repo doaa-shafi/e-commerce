@@ -4,8 +4,12 @@ const OrderSchema = new mongoose.Schema(
   {
     products: [
       {
-        type: mongoose.Types.ObjectId,
-        ref: "product",
+        name:{
+          type:String
+        },
+        price:{
+          type:Number
+        }
       },
     ],
     user: {

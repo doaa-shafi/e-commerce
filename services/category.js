@@ -2,8 +2,8 @@ const Category = require("../models/category");
 
 class categoryService{
 
-  async getCategories(){
-    return await Category.find({});
+  async getCategories(page,limit){
+    return await Category.find({}).skip(page*(limit-1)).limit(limit);
   }
 
   async getCategory(id){

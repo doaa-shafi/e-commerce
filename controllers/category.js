@@ -1,14 +1,16 @@
 const categoryService = require("../services/category");
 const {categorySchema}=require("../validatationSchemas/categorySchema")
-const {idSchema}=require('../validatationSchemas/idSchema')
+const {idSchema,page_limitSchema}=require('../validatationSchemas/id,page,limitSchema')
 const validate=require('../helpers/validate');
 const authorize = require("../helpers/authorize");
 const {RESOURSES_NAMES,ACTIONS_NAMES}=require('../config/constants')
 
 const getCategories = async (req, res,next) => {
+  const{page,limit}=req.body
   try {
     authorize(req.role,RESOURSES_NAMES.CATEGORY,[ACTIONS_NAMES.READ_ANY])
-    const categories=await categoryService.getCategories()
+    validate(page_limitSchema,{page:page,limit:limit})
+    const categories=await categoryService.getCategories(page,limit)
     res.status(200).json(categories);
   } catch (error) {
     next(error)

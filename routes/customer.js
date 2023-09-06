@@ -1,7 +1,8 @@
 const express = require("express");
-const { addAddress, getCustomer, getCustomers ,getCustomerOrders} = require("../controllers/customer");
+const { addAddress, getCustomer, getCustomers,showMyBag} = require("../controllers/customer");
 
 const verifyJWT  = require("../middlewares/verifyJWT");
+
 
 const router = express.Router();
 
@@ -9,9 +10,9 @@ router.patch("/", verifyJWT, addAddress);
 
 router.get("/", verifyJWT, getCustomers);
 
-router.get("/:id", verifyJWT, getCustomer);
+router.get("/bag", verifyJWT, showMyBag);
 
-router.get("/:id/orders", verifyJWT, getCustomerOrders);
+router.get("/:id", verifyJWT, getCustomer);
 
 module.exports = router;
 

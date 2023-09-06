@@ -33,20 +33,15 @@ const UserSchema = new mongoose.Schema(
         },
       },
     ],
-    bag: {
-      products: [
+    bag: [
         {
           type: mongoose.Types.ObjectId,
           ref: "product",
         },
-      ],
-      totalPrice: {
-        type: Number,
-        default:0
-      },
-    },
+    ],
   },
   { timestamps: true }
 );
+
 
 module.exports = mongoose.model("User", UserSchema);

@@ -1,4 +1,5 @@
 const Joi=require('joi')
+Joi.objectId = require('joi-objectid')(Joi)
 
 const productSchema = Joi.object({
     name: Joi.string()
@@ -9,6 +10,8 @@ const productSchema = Joi.object({
     
     price: Joi.number()
     .required(),
+
+    category: Joi.array().items(Joi.objectId())
 
 })
 

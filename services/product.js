@@ -2,18 +2,19 @@ const Product = require("../models/product");
 
 class productService{
 
-  async getProducts(){
-    return await Product.find({});
+  async getProducts(page,limit){
+    return await Product.find({}).skip(page*(limit-1)).limit(limit);
   }
 
   async getProduct(id){
     return await Product.findById(id);
   }
 
-  async addProduct(name,price){
+  async addProduct(name,price,category){
     return await Product.create({
       name: name,
-      price:price
+      price:price,
+      category:category
     });
   }
 }

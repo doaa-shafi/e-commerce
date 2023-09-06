@@ -1,14 +1,16 @@
 const customerService=require('../services/customer')
 const {addAddressSchema}=require("../validatationSchemas/addressSchema")
-const {idSchema}=require('../validatationSchemas/idSchema')
+const {idSchema,page_limitSchema}=require('../validatationSchemas/id,page,limitSchema')
 const validate=require('../helpers/validate');
 const authorize = require("../helpers/authorize");
 const {RESOURSES_NAMES,ACTIONS_NAMES}=require('../config/constants')
 
 const getCustomers = async (req, res,next) => {
+  const {page,limit}=req.body
   try {
     authorize(req.role,RESOURSES_NAMES.CUSTOMER,[ACTIONS_NAMES.READ_ANY])
-    const customers=await customerService.getCustomers()
+    validate(page_limitSchema,{page:page,limit:limit})
+    const customers=await customerService.getCustomers(page,limit)
     res.status(200).json(customers);
   } catch (error) {
     next(error)
@@ -25,18 +27,18 @@ const getCustomer = async (req, res,next) => {
     next(error)
   } 
 } 
-  
-const getCustomerOrders = async (req, res,next) => {
-  const id  = req.params.id;
+
+const showMyBag= async(req,res,next)=>{
+  const id  = req.id;
   try {
-    authorize(req.role,RESOURSES_NAMES.ORDER,[ACTIONS_NAMES.READ_ANY,ACTIONS_NAMES.READ_OWN],id===req.id)
-    validate(idSchema,{id:id})
-    const orders = await customerService.getCustomerOrders(id);
-    res.status(200).json(orders);
+    authorize(req.role,RESOURSES_NAMES.CUSTOMER,[ACTIONS_NAMES.READ_OWN])
+    const customer=await customerService.showMyBag(id)
+    res.status(200).json(customer);
   } catch (error) {
     next(error)
   } 
-};
+}
+
 const addAddress = async (req, res,next) => {
   const { name, desc } = req.body;
   const id = req.id;
@@ -53,6 +55,6 @@ const addAddress = async (req, res,next) => {
 module.exports = {
   getCustomer,
   getCustomers,
-  getCustomerOrders,
+  showMyBag,
   addAddress,
 };
