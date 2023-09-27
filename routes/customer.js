@@ -1,16 +1,16 @@
 const express = require("express");
-const { addAddress, getCustomer, getCustomers,showMyBag} = require("../controllers/customer");
+const { addAddress, getCustomer, getCustomers,showMyCart} = require("../controllers/customer");
 
 const verifyJWT  = require("../middlewares/verifyJWT");
 
 
 const router = express.Router();
 
-router.patch("/", verifyJWT, addAddress);
+router.patch("/add-address/:id", verifyJWT, addAddress);
 
 router.get("/", verifyJWT, getCustomers);
 
-router.get("/bag", verifyJWT, showMyBag);
+router.get("/cart", verifyJWT, showMyCart);
 
 router.get("/:id", verifyJWT, getCustomer);
 

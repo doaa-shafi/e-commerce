@@ -6,7 +6,7 @@ const authorize = require("../helpers/authorize");
 const {RESOURSES_NAMES,ACTIONS_NAMES}=require('../config/constants')
 
 const getCategories = async (req, res,next) => {
-  const{page,limit}=req.body
+  const{page,limit}=req.query
   try {
     authorize(req.role,RESOURSES_NAMES.CATEGORY,[ACTIONS_NAMES.READ_ANY])
     validate(page_limitSchema,{page:page,limit:limit})

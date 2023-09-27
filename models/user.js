@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const uniqueValidator = require('mongoose-unique-validator');
 
 const UserSchema = new mongoose.Schema(
   {
@@ -33,15 +34,21 @@ const UserSchema = new mongoose.Schema(
         },
       },
     ],
-    bag: [
-        {
+    cart: [
+      {
+        product: {
           type: mongoose.Types.ObjectId,
           ref: "product",
         },
+        quantity: {
+          type: Number,
+        },
+      },
     ],
   },
   { timestamps: true }
 );
 
+UserSchema.plugin(uniqueValidator, { message: '{PATH} already exists.' });
 
 module.exports = mongoose.model("User", UserSchema);

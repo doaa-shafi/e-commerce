@@ -6,7 +6,7 @@ const authorize = require("../helpers/authorize");
 const {RESOURSES_NAMES,ACTIONS_NAMES}=require('../config/constants')
 
 const getCustomers = async (req, res,next) => {
-  const {page,limit}=req.body
+  const {page,limit}=req.query
   try {
     authorize(req.role,RESOURSES_NAMES.CUSTOMER,[ACTIONS_NAMES.READ_ANY])
     validate(page_limitSchema,{page:page,limit:limit})
@@ -28,11 +28,11 @@ const getCustomer = async (req, res,next) => {
   } 
 } 
 
-const showMyBag= async(req,res,next)=>{
+const showMyCart= async(req,res,next)=>{
   const id  = req.id;
   try {
     authorize(req.role,RESOURSES_NAMES.CUSTOMER,[ACTIONS_NAMES.READ_OWN])
-    const customer=await customerService.showMyBag(id)
+    const customer=await customerService.showMyCart(id)
     res.status(200).json(customer);
   } catch (error) {
     next(error)
@@ -41,9 +41,9 @@ const showMyBag= async(req,res,next)=>{
 
 const addAddress = async (req, res,next) => {
   const { name, desc } = req.body;
-  const id = req.id;
+  const id = req.params.id;
   try {
-    authorize(req.role,RESOURSES_NAMES.CUSTOMER,[ACTIONS_NAMES.UPDATE_OWN])
+    authorize(req.role,RESOURSES_NAMES.CUSTOMER,[ACTIONS_NAMES.UPDATE_OWN],id===req.id)
     validate(addAddressSchema,{ name: name,desc:desc})
     const user=await customerService.addAddress(name,desc,id)
     res.status(201).json(user);
@@ -55,6 +55,6 @@ const addAddress = async (req, res,next) => {
 module.exports = {
   getCustomer,
   getCustomers,
-  showMyBag,
+  showMyCart,
   addAddress,
 };

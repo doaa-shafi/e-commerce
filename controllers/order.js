@@ -3,10 +3,11 @@ const {orderAddressSchema}=require("../validatationSchemas/addressSchema")
 const {idSchema,page_limitSchema}=require('../validatationSchemas/id,page,limitSchema')
 const validate=require('../helpers/validate');
 const authorize = require("../helpers/authorize");
-const {RESOURSES_NAMES,ACTIONS_NAMES}=require('../config/constants')
+const {RESOURSES_NAMES,ACTIONS_NAMES}=require('../config/constants');
+const { addToCartSchema } = require('../validatationSchemas/orderScema');
 
 const getOrders = async (req, res,next) => {
-  const {page,limit}=req.body
+  const {page,limit}=req.query
   try {
     authorize(req.role,RESOURSES_NAMES.ORDER,[ACTIONS_NAMES.READ_ANY])
     validate(page_limitSchema,{page:page,limit:limit})
@@ -28,18 +29,7 @@ const getOrder = async (req, res,next) => {
     next(error)
   }  
 };
-const addToBag=async(req,res,next)=>{
-  const product_id=req.params.product_id
-  const customer=req.id
-  try {
-    authorize(req.role,RESOURSES_NAMES.CUSTOMER,[ACTIONS_NAMES.UPDATE_OWN])
-    validate(idSchema,{id:product_id})
-    const user=await orderService.addToBag(customer,product_id)
-    res.status(201).json(user);
-  } catch (error) {
-    next(error)
-  }  
-}
+
 const getCustomerOrders = async (req, res,next) => {
   const id  = req.params.id;
   try {
@@ -51,14 +41,29 @@ const getCustomerOrders = async (req, res,next) => {
     next(error)
   } 
 };
+
+const addToCart=async(req,res,next)=>{
+  const {product_id,quantity}=req.body
+  const customer=req.id
+  try {
+    authorize(req.role,RESOURSES_NAMES.CUSTOMER,[ACTIONS_NAMES.UPDATE_OWN])
+    validate(idSchema,{id:product_id})
+    validate(addToCartSchema,{quantity:quantity})
+    const result=await orderService.addToCart(customer,product_id,quantity)
+    res.status(201).json(result);
+  } catch (error) {
+    next(error)
+  }  
+}
+
 const createOrder = async (req, res,next) => {
   const { address } = req.body;
   const id = req.id;
   try {
     authorize(req.role,RESOURSES_NAMES.ORDER,[ACTIONS_NAMES.CREATE_ANY])
     validate(orderAddressSchema,{desc:address})
-    const order=await orderService.createOrder(address,id)
-    res.status(201).json(order);
+    const result=await orderService.createOrder(address,id)
+    res.status(201).json(result);
   } catch (error) {
     next(error)
   }  
@@ -69,5 +74,5 @@ module.exports = {
   getOrders,
   getOrder,
   getCustomerOrders,
-  addToBag,
+  addToCart,
 };

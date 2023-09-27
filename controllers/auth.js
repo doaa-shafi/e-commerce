@@ -23,7 +23,7 @@ const login = async (req, res, next) => {
       sameSite: "None", //cross-site cookie
       maxAge: 7 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
     });
-    res.status(200).json({ accessToken });
+    res.status(200).json({ accessToken ,refreshToken});
   } catch (error) {
     next(error)
   }  
@@ -44,7 +44,7 @@ const signUp = async (req, res, next) => {
       sameSite: "None", //cross-site cookie
       maxAge: 7 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
     });
-    res.status(200).json({ accessToken });
+    res.status(200).json({ accessToken,refreshToken });
   } catch (error) {
     next(error)
   }  
@@ -64,13 +64,13 @@ const refresh = (req, res, next) => {
       refreshToken,
       REFRESH_TOKEN_SECRET,
       async (err, decoded) => {
-        if (err) next(new AuthorizationError('Forbidden'))
+        if (err) next(new AuthenticationError('Invalid refresh token'))
   
         const foundUser = await User.findOne({
           username: decoded.username,
         }).exec();
   
-        if (!foundUser) next(new AuthenticationError("Unauthorized"));
+        if (!foundUser) next(new AuthenticationError("Invalid refresh token"));
         
         const accessToken=authService.refresh(foundUser)
         res.json({ accessToken });

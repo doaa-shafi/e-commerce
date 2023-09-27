@@ -11,11 +11,11 @@ class authService{
   async login(username,password){
     const foundUser = await User.findOne({ username }).exec();
 
-    if (!foundUser) throw new AuthenticationError("username does not exist");
+    if (!foundUser) throw new AuthenticationError("username or password is incorrect");
 
     const match = await bcrypt.compare(password, foundUser.password);
 
-    if (!match)  throw new AuthenticationError("password is incorrect");
+    if (!match)  throw new AuthenticationError("username or password is incorrect");
 
     const accessToken = generateAccessToken(
       foundUser.username,

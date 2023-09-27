@@ -7,9 +7,7 @@ const authorize =(role,resource,actions,condition)=>{
         const permission=eval(string)
         if(permission.granted){
             if(actions[i].substring(actions[i].length-3)==='Own'){
-                console.log(condition)
                 if(condition===false){
-                    console.log('lolo')
                     throw new AuthorizationError('You do not have access')
                 }
             }

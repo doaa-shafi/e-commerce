@@ -9,13 +9,21 @@ const OrderSchema = new mongoose.Schema(
         },
         price:{
           type:Number
+        },
+        quantity:{
+          type:Number
         }
       },
     ],
     user: {
-      type: mongoose.Types.ObjectId,
-      ref: "user",
-      required: true,
+      id:{
+        type: mongoose.Types.ObjectId,
+        ref: "user",
+        required: true,
+      },
+      name:{
+        type:String
+      },
     },
     totalPrice: {
       type: Number,

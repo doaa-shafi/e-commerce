@@ -4,16 +4,16 @@ const Product=require('../models/product')
 class customerService{
 
   async getCustomers(page,limit){
-    return await User.find({}).skip(page*(limit-1)).limit(limit);
+    return await User.find({}).skip(limit*(page-1)).limit(limit);
   }
 
   async getCustomer(id){
     return await User.findById(id);
   }
 
-  async showMyBag(id){
+  async showMyCart(id){
     const user = await User.findById(id);
-    const products=await Product.find({ _id: { $in:user.bag} }, { _id: 0 })
+    const products=await Product.find({ _id: { $in:user.cart} }, { _id: 0 })
     const totalPrice = products.reduce((accumulator, object) => {
       return accumulator + object.price;
     }, 0);

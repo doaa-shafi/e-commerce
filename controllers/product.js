@@ -6,7 +6,7 @@ const authorize = require("../helpers/authorize");
 const {RESOURSES_NAMES,ACTIONS_NAMES}=require('../config/constants')
 
 const getProducts = async (req, res,next) => {
-  const {page,limit}=req.body
+  const {page,limit}=req.query
   try {
     authorize(req.role,RESOURSES_NAMES.PRODUCT,[ACTIONS_NAMES.READ_ANY])
     validate(page_limitSchema,{page:page,limit:limit})
@@ -32,7 +32,7 @@ const addProduct = async (req, res,next) => {
   const { name, price ,category} = req.body;
   try {
     authorize(req.role,RESOURSES_NAMES.PRODUCT,[ACTIONS_NAMES.CREATE_ANY])
-    validate(productSchema,{ name: name,price:price})
+    validate(productSchema,{ name: name,price:price,category:category})
     const product=await productService.addProduct(name,price,category)
     res.status(201).json(product);
   } catch (error) {

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const uniqueValidator = require('mongoose-unique-validator');
 
 const ProductSchema = new mongoose.Schema(
   {
@@ -21,5 +22,7 @@ const ProductSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+ProductSchema.plugin(uniqueValidator, { message: 'Product {PATH} must be unique.' });
 
 module.exports = mongoose.model("Product", ProductSchema);
